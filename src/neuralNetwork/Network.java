@@ -1,7 +1,5 @@
 package neuralNetwork;
 
-import java.util.Arrays;
-
 public class Network {
 	private double inputs[];
 	private double weights1[][];
