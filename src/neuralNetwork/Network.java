@@ -1,12 +1,16 @@
 package neuralNetwork;
 
+import cern.colt.matrix.linalg.Algebra;
+import cern.colt.matrix.impl.DenseDoubleMatrix1D;
+import cern.colt.matrix.impl.DenseDoubleMatrix2D;
+
 public class Network {
-	private double inputs[];
-	private double weights1[][];
-	private double weights2[][];
-	private double outputs[];
-	private double layer1[];
-	
+	private DenseDoubleMatrix1D inputs;
+	private DenseDoubleMatrix2D weights1;
+	private DenseDoubleMatrix2D weights2;
+	private DenseDoubleMatrix1D outputs;
+	private DenseDoubleMatrix1D layer1;
+	Algebra algebra = new Algebra();
 	
 	//Builders
 	public Network(int inputSize, int outputSize) {
@@ -14,10 +18,8 @@ public class Network {
 	}
 	
 	public Network(int inputSize, int middleNeurons, int outputSize) {
-		weights1 = new double[inputSize][middleNeurons];
-		outputs = new double[outputSize];
-		layer1 = new double[middleNeurons];
-		weights2 = new double[middleNeurons][outputSize];
+		double[][] weights1 = new double[middleNeurons][inputSize];
+		double[][] weights2 = new double[outputSize][middleNeurons];
 		
 		for(int i = 0; i < weights1.length; i++)
 			for(int j = 0; j < weights1[i].length; j++)
@@ -26,32 +28,39 @@ public class Network {
 		for(int i = 0; i < weights2.length; i++)
 			for(int j = 0; j < weights2[i].length; j++)
 				weights2[i][j] = (Math.random() / 5) - 0.1;
+		
+		this.weights1 = new DenseDoubleMatrix2D(weights1);
+		outputs = new DenseDoubleMatrix1D(outputSize);
+		layer1 = new DenseDoubleMatrix1D(middleNeurons);
+		this.weights2 = new DenseDoubleMatrix2D(weights2);
 	}
 	
 	//Train
-	public double[] train(TestCase t/*double inputs[], double expectedoutput*/) {
-		this.inputs = t.getInputs().clone();
-		layer1 = matrixMult(new double[][] {this.inputs}, weights1)[0];
+	public void train(TestCase t) {
+		//feed forward
+		this.inputs = t.getInputs();
+		layer1 = (DenseDoubleMatrix1D)algebra.mult(weights1, inputs);
 		sigmoid(layer1);
-		outputs = matrixMult(new double[][] {this.layer1}, weights2)[0];
+		outputs = (DenseDoubleMatrix1D)algebra.mult(weights2, layer1);
 		sigmoid(outputs);
-		return outputs;
+		System.out.println(outputs.toString()); //dbug
+		
+		//Calculate the errors
+		DenseDoubleMatrix1D output_errors = subtract(t.getOutputs(), outputs);
+		
+		//Adjust weights
+		
 	}
-
-	private double[][] matrixMult(double m1[][], double m2[][]) {
-		double m3[][] = new double[m1.length][m2[0].length];
-		double dotproduct = 0;
-		for(int k = 0; k < m1.length; k++)
-			for(int j = 0; j < m2[0].length; j++) {
-				for(int i = 0; i < m1[0].length; i++)
-					dotproduct += m1[k][i] * m2[i][j];
-				m3[k][j] = dotproduct;
-			}
-		return m3;
+	//Auxiliary methods
+	private void sigmoid(DenseDoubleMatrix1D m1) {
+		for(int i = 0; i < m1.size(); i++)
+			m1.setQuick(i, 1/(1+Math.pow(Math.E, -m1.getQuick(i))));
 	}
 	
-	private void sigmoid(double [] m1) {
-		for(int i = 0; i < m1.length; i++)
-			m1[i] = 1/(1+Math.pow(Math.E, -m1[i]));
+	private DenseDoubleMatrix1D subtract(DenseDoubleMatrix1D m1, DenseDoubleMatrix1D m2) {
+		DenseDoubleMatrix1D m3 = new DenseDoubleMatrix1D(m1.size());
+		for(int i = 0; i < m1.size(); i++)
+			m3.setQuick(i, m1.getQuick(i) - m2.getQuick(i));
+		return m3;
 	}
 }

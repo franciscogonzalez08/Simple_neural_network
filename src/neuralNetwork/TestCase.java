@@ -1,24 +1,28 @@
 package neuralNetwork;
 
+import cern.colt.matrix.impl.DenseDoubleMatrix1D;
+
 public class TestCase {
-	private double inputs[];
-	private double outputs[];
+	private DenseDoubleMatrix1D inputs;
+	private DenseDoubleMatrix1D outputs;
 	
-	public TestCase(double inputs[][], double output[]) {
-		this.inputs = new double[inputs.length * inputs[0].length];
+	//Builder
+	public TestCase(double inputs[][], double outputs[]) {
+		this.inputs = new DenseDoubleMatrix1D(inputs.length * inputs[0].length);
 		
 		for(int i = 0; i < inputs.length; i++)
 			for(int j = 0; j < inputs[0].length; j++)
-				this.inputs[i * inputs[0].length + j] = inputs[i][j];
+				this.inputs.setQuick(i * inputs[0].length + j, inputs[i][j]);
 		
-		this.outputs = output.clone();
+		this.outputs = new DenseDoubleMatrix1D(outputs);
 	}
 
-	public double[] getInputs() {
+	//Getters
+	public DenseDoubleMatrix1D getInputs() {
 		return inputs;
 	}
 
-	public double[] getOutput() {
+	public DenseDoubleMatrix1D getOutputs() {
 		return outputs;
 	}
 }
