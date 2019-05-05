@@ -9,15 +9,18 @@ public class Network {
 	private DenseDoubleMatrix2D weights1;
 	private DenseDoubleMatrix2D weights2;
 	private DenseDoubleMatrix1D outputs;
-	private DenseDoubleMatrix1D layer1;
+	private DenseDoubleMatrix1D hidden_layer;
+	private final double LEARNING_RATE; // valid range: [0.001, 0.1]
 	Algebra algebra = new Algebra();
 	
 	//Builders
-	public Network(int inputSize, int outputSize) {
-		this(inputSize, (int)Math.ceil((inputSize + outputSize)/2.0), outputSize);		
+	public Network(int inputSize, int outputSize, double learning_rate) {
+		this(inputSize, (int)Math.ceil((inputSize + outputSize)/2.0), outputSize, learning_rate);
 	}
 	
-	public Network(int inputSize, int middleNeurons, int outputSize) {
+	public Network(int inputSize, int middleNeurons, int outputSize, double learning_rate) {
+		LEARNING_RATE = learning_rate;
+		
 		double[][] weights1 = new double[middleNeurons][inputSize];
 		double[][] weights2 = new double[outputSize][middleNeurons];
 		
@@ -31,7 +34,7 @@ public class Network {
 		
 		this.weights1 = new DenseDoubleMatrix2D(weights1);
 		outputs = new DenseDoubleMatrix1D(outputSize);
-		layer1 = new DenseDoubleMatrix1D(middleNeurons);
+		hidden_layer = new DenseDoubleMatrix1D(middleNeurons);
 		this.weights2 = new DenseDoubleMatrix2D(weights2);
 	}
 	
@@ -39,22 +42,88 @@ public class Network {
 	public void train(TestCase t) {
 		//feed forward
 		this.inputs = t.getInputs();
-		layer1 = (DenseDoubleMatrix1D)algebra.mult(weights1, inputs);
-		sigmoid(layer1);
-		outputs = (DenseDoubleMatrix1D)algebra.mult(weights2, layer1);
+		hidden_layer = (DenseDoubleMatrix1D)algebra.mult(weights1, inputs);
+		sigmoid(hidden_layer);
+		outputs = (DenseDoubleMatrix1D)algebra.mult(weights2, hidden_layer);
 		sigmoid(outputs);
 		System.out.println(outputs.toString()); //dbug
 		
 		//Calculate the errors
 		DenseDoubleMatrix1D output_errors = subtract(t.getOutputs(), outputs);
 		
-		//Adjust weights
+		//Adjust weights2 
+		
+		// delta = sigmoid'(outputs)*output_errors
+		DenseDoubleMatrix1D output_delta = cross_product(dSigmoid(outputs), output_errors);
+		
+		// new_weight = hidden_layer * output_layer_delta * learning_rate
+		scalar_product(output_delta, LEARNING_RATE);
+		
+		int oSize = outputs.size();
+		int hSize = hidden_layer.size();
+		for(int o = 0; o < oSize; o++)
+			for(int h = 0; h < hSize; h++)
+				weights2.setQuick(o, h, weights2.getQuick(o, h) + /*sum?*/
+				hidden_layer.getQuick(h)*output_delta.getQuick(o));
+		
+		// Adjust weights1
+		// hidden error = weights2 * output_errors
+		DenseDoubleMatrix1D hidden_error = (DenseDoubleMatrix1D)algebra.mult(weights2.viewDice(), output_errors);
+		
+		// new_weight = LR * hidden error * dSigmoid(hidden_layer) * input_layer 
+		DenseDoubleMatrix1D hidden_delta = cross_product(dSigmoid(hidden_layer), hidden_error);
+		scalar_product(hidden_delta, LEARNING_RATE);
+		
+		int iSize = inputs.size();
+		for(int h = 0; h < hSize; h++)
+			for(int i = 0; i < iSize; i++)
+				weights1.setQuick(h, i, weights1.getQuick(h, i) + /*sum?*/
+				inputs.getQuick(i)*hidden_delta.getQuick(h));
 		
 	}
+	
+	//Evaluate
+	public void classify(TestCase t) {
+		this.inputs = t.getInputs();
+		hidden_layer = (DenseDoubleMatrix1D)algebra.mult(weights1, inputs);
+		sigmoid(hidden_layer);
+		outputs = (DenseDoubleMatrix1D)algebra.mult(weights2, hidden_layer);
+		sigmoid(outputs);
+		System.out.println(outputs.toString()); //dbug
+	}
+	
 	//Auxiliary methods
-	private void sigmoid(DenseDoubleMatrix1D m1) {
-		for(int i = 0; i < m1.size(); i++)
-			m1.setQuick(i, 1/(1+Math.pow(Math.E, -m1.getQuick(i))));
+	private void sigmoid(DenseDoubleMatrix1D v) {
+		int size = v.size();
+		for(int i = 0; i < size; i++)
+			v.setQuick(i, 1/(1+Math.pow(Math.E, -v.getQuick(i))));
+	}
+	
+	private DenseDoubleMatrix1D dSigmoid(DenseDoubleMatrix1D v) {
+		int size = v.size();
+		DenseDoubleMatrix1D u = new DenseDoubleMatrix1D(size);
+		
+		for(int i = 0; i < size; i++)
+			u.setQuick(i, v.getQuick(i)*(1-v.getQuick(i)));
+		
+		return u;
+	}
+	
+	private DenseDoubleMatrix1D cross_product(DenseDoubleMatrix1D u, DenseDoubleMatrix1D v) {
+		int size = u.size();
+		DenseDoubleMatrix1D w = new DenseDoubleMatrix1D(size);
+		
+		for(int i = 0; i < size; i++)
+			w.setQuick(i, u.getQuick(i) * v.getQuick(i));
+		
+		return w;
+	}
+	
+	private void scalar_product(DenseDoubleMatrix1D v, double scalar) {
+		int size = v.size();
+		
+		for(int i = 0; i < size; i++)
+			v.setQuick(i, v.getQuick(i) * scalar);
 	}
 	
 	private DenseDoubleMatrix1D subtract(DenseDoubleMatrix1D m1, DenseDoubleMatrix1D m2) {
