@@ -63,7 +63,7 @@ public class Network {
 		int hSize = hidden_layer.size();
 		for(int o = 0; o < oSize; o++)
 			for(int h = 0; h < hSize; h++)
-				weights2.setQuick(o, h, weights2.getQuick(o, h) + /*sum?*/
+				weights2.setQuick(o, h, weights2.getQuick(o, h) +
 				hidden_layer.getQuick(h)*output_delta.getQuick(o));
 		
 		// Adjust weights1
@@ -77,7 +77,7 @@ public class Network {
 		int iSize = inputs.size();
 		for(int h = 0; h < hSize; h++)
 			for(int i = 0; i < iSize; i++)
-				weights1.setQuick(h, i, weights1.getQuick(h, i) + /*sum?*/
+				weights1.setQuick(h, i, weights1.getQuick(h, i) + 
 				inputs.getQuick(i)*hidden_delta.getQuick(h));
 		
 	}

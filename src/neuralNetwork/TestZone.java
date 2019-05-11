@@ -58,7 +58,7 @@ public class TestZone {
 	public static void training(Network network, TestCase ... cases) {
 		int testQuantity = cases.length;
 		
-		int i = 10000;
+		int i = 10_000;
 		int testIndex;
 		while(i > 0) {
 			testIndex = (int)Math.floor(Math.random()*testQuantity);
