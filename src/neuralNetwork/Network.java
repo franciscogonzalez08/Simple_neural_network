@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Network {
@@ -57,9 +58,9 @@ public class Network {
             String str;
             String arrLine[];
             int lineNumber = 1;
-            while((str = br.readLine()) != null) // TODO: maybe check there's actually that many rows?
+            while((str = br.readLine()) != null && lineNumber <= to) // TODO: maybe check there's actually that many rows?
             {
-            	if(lineNumber < from || lineNumber > to) {
+            	if(lineNumber < from) {
             		lineNumber++;
             		continue;
             	}
@@ -95,15 +96,93 @@ public class Network {
 		trainCSV(path, 1, quantity);
 	}
 	
-	public void train() {
-		//feed forward
+	// TODO: maybe do one with just path too
+	
+	// Test
+	public double[] testCSV(String path, int from, int to) {
+		int quantity = to - from + 1;
+		
+		DenseDoubleMatrix1D avg_error_vector = new DenseDoubleMatrix1D(outputs.size());
+        avg_error_vector.assign(0);
+        DenseDoubleMatrix1D temp_vector;
+		
+		try {
+            FileReader fr = new FileReader(path);
+            BufferedReader br = new BufferedReader(fr);
+
+            String str;
+            String arrLine[];
+            int lineNumber = 1;
+            
+            while((str = br.readLine()) != null && lineNumber <= to) // TODO: maybe check there's actually that many rows?
+            {
+            	if(lineNumber < from) {
+            		lineNumber++;
+            		continue;
+            	}
+            	
+            	// We'll save the line in an array
+            	arrLine = str.split(",");
+            	
+            	// TODO: Validate the size or arrLine is = inputs+1 (bc label)
+            	
+            	// We'll feed in the inputs
+            	for(int i = 1; i < inputs.size()+1; i++) 
+            		inputs.setQuick(i-1, Double.parseDouble(arrLine[i]));
+            	
+            	// We update the expected outputs for the current case
+            	if(labelsMap == null) 
+            	{
+            		// If no special mapping is configured, we'll assume it works with 0-9
+            		expected_outputs.assign(0);
+            		expected_outputs.setQuick(Integer.parseInt(arrLine[0]), 1.0);
+            	} // TODO: Else
+            	
+            	// We'll calculate the outputs
+            	feed_forward();
+            	
+            	// Now we'll see how far off they were and calculate an average error
+            	temp_vector = subtract(expected_outputs, outputs);
+            	scalar_product(temp_vector, 1.0/quantity);
+            	
+            	// An error of 1 and -1 shouldn't cancel out, they should add up
+            	for(int i = 0; i < outputs.size(); i++)
+            		temp_vector.setQuick(i, Math.abs(temp_vector.getQuick(i)));
+            	
+            	avg_error_vector = sum(avg_error_vector, temp_vector);
+            	
+            	lineNumber++;
+            }
+            br.close();
+            
+            // Now we have an average error per class, but it's in range [-1, 1]
+            for(int i = 0; i < outputs.size(); i++)
+            	avg_error_vector.setQuick(i, (1-Math.abs(avg_error_vector.getQuick(i)))*100);
+            
+        } catch(IOException e){
+            System.out.println("Couldn't find or read the file.");
+        }
+		
+		System.out.println(Arrays.toString(avg_error_vector.toArray()));
+		
+		return avg_error_vector.toArray();
+	}
+	
+	// Auxiliary Methods
+	private void feed_forward() {
 		hidden_layer = (DenseDoubleMatrix1D)algebra.mult(weights1, inputs);
 		sigmoid(hidden_layer);
 		outputs = (DenseDoubleMatrix1D)algebra.mult(weights2, hidden_layer);
 		sigmoid(outputs);
-		System.out.println(outputs.toString()); //dbug - see outputs
-		System.out.println("Expected: \n" + expected_outputs.toString()); //dbug - see outputs
 		
+		if(expected_outputs.getQuick(1) == 1) {
+			System.out.println(outputs.toString()); //dbug - see outputs
+			System.out.println("Expected: \n" + expected_outputs.toString());
+		}
+	}
+	
+	private void train() {
+		feed_forward();
 		
 		//Calculate the errors
 		DenseDoubleMatrix1D output_errors = subtract(expected_outputs, outputs);
@@ -139,17 +218,7 @@ public class Network {
 		
 	}
 	
-	//Evaluate
-	public void classify(TestCase t) {
-		this.inputs = t.getInputs();
-		hidden_layer = (DenseDoubleMatrix1D)algebra.mult(weights1, inputs);
-		sigmoid(hidden_layer);
-		outputs = (DenseDoubleMatrix1D)algebra.mult(weights2, hidden_layer);
-		sigmoid(outputs);
-		System.out.println(outputs.toString()); //dbug
-	}
-	
-	//Auxiliary methods
+	//Auxiliary auxiliary methods
 	private void sigmoid(DenseDoubleMatrix1D v) {
 		int size = v.size();
 		for(int i = 0; i < size; i++)
@@ -183,10 +252,17 @@ public class Network {
 			v.setQuick(i, v.getQuick(i) * scalar);
 	}
 	
-	private DenseDoubleMatrix1D subtract(DenseDoubleMatrix1D m1, DenseDoubleMatrix1D m2) {
-		DenseDoubleMatrix1D m3 = new DenseDoubleMatrix1D(m1.size());
-		for(int i = 0; i < m1.size(); i++)
-			m3.setQuick(i, m1.getQuick(i) - m2.getQuick(i));
-		return m3;
+	private static DenseDoubleMatrix1D sum(DenseDoubleMatrix1D v1, DenseDoubleMatrix1D v2) {
+		DenseDoubleMatrix1D v3 = new DenseDoubleMatrix1D(v1.size());
+		for(int i = 0; i < v1.size(); i++)
+			v3.setQuick(i, v1.getQuick(i) + v2.getQuick(i));
+		return v3;
+	}
+	
+	private static DenseDoubleMatrix1D subtract(DenseDoubleMatrix1D v1, DenseDoubleMatrix1D v2) {
+		DenseDoubleMatrix1D v3 = new DenseDoubleMatrix1D(v1.size());
+		for(int i = 0; i < v1.size(); i++)
+			v3.setQuick(i, v1.getQuick(i) - v2.getQuick(i));
+		return v3;
 	}
 }
