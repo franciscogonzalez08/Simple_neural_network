@@ -4,14 +4,22 @@ import cern.colt.matrix.linalg.Algebra;
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.IOException;
+
+import java.util.HashMap;
+
 public class Network {
 	private DenseDoubleMatrix1D inputs;
+	private DenseDoubleMatrix1D expected_outputs;
 	private DenseDoubleMatrix2D weights1;
 	private DenseDoubleMatrix2D weights2;
 	private DenseDoubleMatrix1D outputs;
 	private DenseDoubleMatrix1D hidden_layer;
 	private final double LEARNING_RATE; // valid range: [0.001, 0.1]
 	Algebra algebra = new Algebra();
+	HashMap<String, Integer> labelsMap = null;
 	
 	//Builders
 	public Network(int inputSize, int outputSize, double learning_rate) {
@@ -32,24 +40,73 @@ public class Network {
 			for(int j = 0; j < weights2[i].length; j++)
 				weights2[i][j] = (Math.random() / 5) - 0.1;
 		
+		inputs = new DenseDoubleMatrix1D(inputSize); // alternatively, build in each test method
+		expected_outputs = new DenseDoubleMatrix1D(outputSize);
 		this.weights1 = new DenseDoubleMatrix2D(weights1);
-		outputs = new DenseDoubleMatrix1D(outputSize);
 		hidden_layer = new DenseDoubleMatrix1D(middleNeurons);
 		this.weights2 = new DenseDoubleMatrix2D(weights2);
+		outputs = new DenseDoubleMatrix1D(outputSize);
 	}
 	
 	//Train
-	public void train(TestCase t) {
+	public void trainCSV(String path, int from, int to) {
+		try {
+            FileReader fr = new FileReader(path);
+            BufferedReader br = new BufferedReader(fr);
+
+            String str;
+            String arrLine[];
+            int lineNumber = 1;
+            while((str = br.readLine()) != null) // TODO: maybe check there's actually that many rows?
+            {
+            	if(lineNumber < from || lineNumber > to) {
+            		lineNumber++;
+            		continue;
+            	}
+            	
+            	// We'll save the line in an array
+            	arrLine = str.split(",");
+            	
+            	// TODO: Validate the size or arrLine is = inputs+1 (bc label)
+            	
+            	// We'll feed in the inputs
+            	for(int i = 1; i < inputs.size()+1; i++) 
+            		inputs.setQuick(i-1, Double.parseDouble(arrLine[i]));
+            	
+            	// We update the expected outputs for the current case
+            	if(labelsMap == null) 
+            	{
+            		// If no special mapping is configured, we'll assume it works with 0-9
+            		expected_outputs.assign(0);
+            		expected_outputs.setQuick(Integer.parseInt(arrLine[0]), 1.0);
+            	} // TODO: Else
+            	
+            	// We're ready to train the network with the new data
+            	train();
+            	lineNumber++;
+            }
+            br.close();
+        } catch(IOException e){
+            System.out.println("Couldn't find or read the file.");
+        }
+	}
+	
+	public void trainCSV(String path, int quantity) {
+		trainCSV(path, 1, quantity);
+	}
+	
+	public void train() {
 		//feed forward
-		this.inputs = t.getInputs();
 		hidden_layer = (DenseDoubleMatrix1D)algebra.mult(weights1, inputs);
 		sigmoid(hidden_layer);
 		outputs = (DenseDoubleMatrix1D)algebra.mult(weights2, hidden_layer);
 		sigmoid(outputs);
-		System.out.println(outputs.toString()); //dbug
+		System.out.println(outputs.toString()); //dbug - see outputs
+		System.out.println("Expected: \n" + expected_outputs.toString()); //dbug - see outputs
+		
 		
 		//Calculate the errors
-		DenseDoubleMatrix1D output_errors = subtract(t.getOutputs(), outputs);
+		DenseDoubleMatrix1D output_errors = subtract(expected_outputs, outputs);
 		
 		//Adjust weights2 
 		
