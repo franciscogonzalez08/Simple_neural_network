@@ -240,6 +240,44 @@ public class Network {
 		}
 	}
 	
+	public static Network load(String path) {
+		Network nn = null;
+		try {
+			FileReader fr = new FileReader(path);
+			BufferedReader br = new BufferedReader(fr);
+			
+			String[] arrLine = br.readLine().split(" ");
+			String lr = br.readLine();
+			
+			int inputSize = Integer.parseInt(arrLine[0]);
+			int middleSize = Integer.parseInt(arrLine[1]);
+			int outputsSize = Integer.parseInt(arrLine[2]);
+			double learningRate = Double.parseDouble(lr);
+			
+			nn = new Network(inputSize, middleSize, outputsSize, learningRate);
+			
+			br.readLine(); //Empty space
+			
+			for(int i = 0; i < middleSize; i++) {
+				arrLine = br.readLine().split(" ");
+				for(int j = 0; j < inputSize; j++)	
+					nn.weights1.setQuick(i, j, Double.parseDouble(arrLine[j]));
+			}
+			
+			br.readLine();
+			
+			for(int i = 0; i < outputsSize; i++) {
+				arrLine = br.readLine().split(" ");
+				for(int j = 0; j < middleSize; j++)	
+					nn.weights2.setQuick(i, j, Double.parseDouble(arrLine[j]));
+			}		
+			br.close();
+		} catch(IOException e) {
+			System.out.println("File not found.");
+		}
+		return nn;
+	}
+	
 	// Auxiliary Methods
 	private void feed_forward() {
 		hidden_layer = (DenseDoubleMatrix1D)algebra.mult(weights1, inputs);

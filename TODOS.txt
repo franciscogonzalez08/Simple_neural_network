@@ -1,0 +1,5 @@
+1. Checar la precisión de la red neuronal
+2. Implementar el hashMap de los outputs (de preferencia que se guarde en el archivo)
+3. UML
+4. Documentación de la librería
+5. API (¿.jar?)
