@@ -4,12 +4,15 @@ import cern.colt.matrix.linalg.Algebra;
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 
-import java.io.FileReader;
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.FileWriter;
+
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -173,6 +176,7 @@ public class Network {
 		return avg_error_vector.toArray();
 	}
 	
+	// Evaluate
 	public void evaluateIMG(String path) {
 		File imageFile = new File(path);
 		try {
@@ -191,6 +195,48 @@ public class Network {
 			feed_forward();
 		} catch(IOException e) {
 			System.out.println("Couldn't read the given image.");
+		}
+	}
+	
+	public void save(String path_name) {
+		if(path_name == null) return; // TODO: properly handle this
+		
+		try {
+			FileWriter file_writer = new FileWriter(path_name);
+			PrintWriter print_writer = new PrintWriter(file_writer);
+			
+			int inputsSize = inputs.size(),
+				middleSize = hidden_layer.size(),
+				outputsSize = outputs.size();
+			
+			print_writer.println(inputsSize + " " + middleSize + " " + outputsSize);
+			
+			//print_writer.printf("%f\n\n", LEARNING_RATE);
+			print_writer.println(LEARNING_RATE);
+			print_writer.println();
+			
+			// weights1 dimensions: [middle_neurons][input_size]
+			int i, j;
+			for(i = 0; i < middleSize; i++)
+			{
+				for(j = 0; j < inputsSize-1; j++)
+					print_writer.printf("%f ", weights1.getQuick(i, j));
+				print_writer.println(weights1.getQuick(i, j));
+			}	
+			print_writer.println();	
+			
+			// weights2 dimensions: [outputSize][middleNeurons]
+			for(i = 0; i < outputsSize; i++)
+			{
+				for(j = 0; j < middleSize-1; j++)
+					print_writer.printf("%f ", weights2.getQuick(i, j));
+				print_writer.println(weights2.getQuick(i, j));
+			}	
+			print_writer.println();	
+			
+			print_writer.close();
+		} catch (IOException e) {
+			System.out.println("Error. Possible causes are: the named file exists but is a directory rather than a regular file, does not exist but cannot be created, or cannot be opened for any other reason");
 		}
 	}
 	
