@@ -5,11 +5,16 @@ import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 
 import java.io.FileReader;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 
 import java.util.Arrays;
 import java.util.HashMap;
+
+import javax.imageio.ImageIO;
 
 public class Network {
 	private DenseDoubleMatrix1D inputs;
@@ -157,7 +162,7 @@ public class Network {
             
             // Now we have an average error per class, but it's in range [-1, 1]
             for(int i = 0; i < outputs.size(); i++)
-            	avg_error_vector.setQuick(i, (1-Math.abs(avg_error_vector.getQuick(i)))*100);
+            	avg_error_vector.setQuick(i, (1-avg_error_vector.getQuick(i))*100);
             
         } catch(IOException e){
             System.out.println("Couldn't find or read the file.");
@@ -168,6 +173,27 @@ public class Network {
 		return avg_error_vector.toArray();
 	}
 	
+	public void evaluateIMG(String path) {
+		File imageFile = new File(path);
+		try {
+			BufferedImage image = ImageIO.read(imageFile);
+			int width = image.getWidth();
+			int height = image.getHeight(); //TODO: Validar las dimensiones de la imagen con el tamanio de inputs
+			Color pixel;
+			
+			for(int i = 0; i < height; i++)
+				for(int j = 0; j < width; j++) {
+					pixel = new Color(image.getRGB(j, i));
+					inputs.setQuick(i * width + j, 255 - ((pixel.getRed() +
+														   pixel.getGreen() + 
+														   pixel.getBlue())/3));
+				}
+			feed_forward();
+		} catch(IOException e) {
+			System.out.println("Couldn't read the given image.");
+		}
+	}
+	
 	// Auxiliary Methods
 	private void feed_forward() {
 		hidden_layer = (DenseDoubleMatrix1D)algebra.mult(weights1, inputs);
@@ -175,10 +201,12 @@ public class Network {
 		outputs = (DenseDoubleMatrix1D)algebra.mult(weights2, hidden_layer);
 		sigmoid(outputs);
 		
-		if(expected_outputs.getQuick(1) == 1) {
-			System.out.println(outputs.toString()); //dbug - see outputs
-			System.out.println("Expected: \n" + expected_outputs.toString());
-		}
+		System.out.println(outputs.toString()); //dbug - see outputs
+//		System.out.println("Expected: \n" + expected_outputs.toString()); //dbug0
+//		if(expected_outputs.getQuick(1) == 1) {
+//			System.out.println(outputs.toString()); //dbug - see outputs
+//			System.out.println("Expected: \n" + expected_outputs.toString());
+//		}
 	}
 	
 	private void train() {

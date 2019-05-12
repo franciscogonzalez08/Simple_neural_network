@@ -9,12 +9,16 @@ public class TestZone {
 		int times = 1_000;
 		while(times > 0)
 		{
-			firstCSVNetwork.trainCSV("C:\\Users\\Asus\\OneDrive\\Documents\\Learning\\5-Universidad\\4 Semestre\\Orientada a Objetos\\Number Identificating NN Project\\Data Sets\\train_digits2.csv", 1, 50);
+			firstCSVNetwork.trainCSV("C:\\Users\\panch\\cursoJava\\workspace\\NN\\train_digits2.csv", 1, 100);
 			times--;
 		}
 		
 		// TESTING
 		System.out.println("\n\n///// TESTING /////\n\n");
-		firstCSVNetwork.testCSV("C:\\Users\\Asus\\OneDrive\\Documents\\Learning\\5-Universidad\\4 Semestre\\Orientada a Objetos\\Number Identificating NN Project\\Data Sets\\train_digits2.csv", 51, 100);
+		firstCSVNetwork.testCSV("C:\\Users\\panch\\cursoJava\\workspace\\NN\\train_digits2.csv", 1, 100);
+		
+		//EVALUATE
+		System.out.println("EVALUATE");
+		firstCSVNetwork.evaluateIMG("C:\\Users\\panch\\cursoJava\\workspace\\NN\\6v2.png");
 	}
 }
