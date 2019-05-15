@@ -17,7 +17,10 @@ import java.io.FileWriter;
 
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 
@@ -29,8 +32,8 @@ public class Network {
 	private DenseDoubleMatrix1D outputs;
 	private DenseDoubleMatrix1D hidden_layer;
 	private final double LEARNING_RATE; // valid range: [0.001, 0.1]
-	Algebra algebra = new Algebra();
-	Map<String, Integer> labelsMap = null;
+	private Algebra algebra = new Algebra();
+	private Map<String, Integer> labelsMap = null;
 	
 	//Builders
 	public Network(int inputSize, int outputSize) {
@@ -116,6 +119,19 @@ public class Network {
 		trainCSV(path, 1, quantity);
 	}
 	
+	public void trainCSV(String path) {
+		try {
+            FileReader fr = new FileReader(path);
+            BufferedReader br = new BufferedReader(fr);
+
+            int lineCount = (int)Files.lines(Paths.get(path)).count();
+            br.close();
+            trainCSV(path, 1, lineCount);
+            
+        } catch(IOException e){
+            System.out.println("Couldn't find or read the file.");
+        }
+	}
 	
 	// Test
 	public double[] testCSV(String path, int from, int to) {
@@ -134,7 +150,7 @@ public class Network {
             if(to > lineCount) {
             	System.out.println("The file does not have the requested number of rows. The network was not trained.");
             	br.close();
-            	return new double[]{};
+            	return null;
             }
             
             String str;
@@ -207,6 +223,26 @@ public class Network {
 		return avg_error_vector.toArray();
 	}
 	
+	public double[] testCSV(String path, int quantity) {
+		return testCSV(path, 1, quantity);
+	}
+	
+	public double[] testCSV(String path) {
+		try {
+            FileReader fr = new FileReader(path);
+            BufferedReader br = new BufferedReader(fr);
+
+            int lineCount = (int)Files.lines(Paths.get(path)).count();
+            br.close();
+            return testCSV(path, 1, lineCount);
+            
+        } catch(IOException e){
+            System.out.println("Couldn't find or read the file.");
+            return null;
+        }
+
+	}
+	
 	// Evaluate
 	public void evaluateIMG(String path) {
 		File imageFile = new File(path);
@@ -271,9 +307,21 @@ public class Network {
 				for(j = 0; j < middleSize-1; j++)
 					print_writer.printf("%f ", weights2.getQuick(i, j));
 				print_writer.println(weights2.getQuick(i, j));
-			}	
-			print_writer.println();	
+			}		
 			
+			// Map
+			if(labelsMap != null)
+			{
+				print_writer.println();
+				Set<String> keys = labelsMap.keySet();
+				Iterator<String> iterator = keys.iterator();
+				String key;
+				while(iterator.hasNext()) {
+					key = iterator.next();
+					print_writer.println(key + " " + labelsMap.get(key));
+				}
+			}
+
 			print_writer.close();
 		} catch (IOException e) {
 			System.out.println("Error. Possible causes are: the named file exists but is a directory rather than a regular file, does not exist but cannot be created, or cannot be opened for any other reason");
@@ -310,8 +358,25 @@ public class Network {
 				arrLine = br.readLine().split(" ");
 				for(int j = 0; j < middleSize; j++)	
 					nn.weights2.setQuick(i, j, Double.parseDouble(arrLine[j]));
-			}		
+			}	
+			
+			// We'll check if there's a Map
+			br.readLine();
+			
+			String line = br.readLine();
+			if(line != null)
+			{
+				Map<String, Integer> m = new HashMap<>();
+				do
+				{
+					arrLine =  line.split(" ");
+					m.put(arrLine[0], Integer.parseInt(arrLine[1]));
+				} while((line = br.readLine()) != null);
+				nn.configureMapping(m);
+			}
+			
 			br.close();
+			
 		} catch(IOException e) {
 			System.out.println("File not found.");
 		}
