@@ -7,20 +7,22 @@ public class TestZone {
 		
 		
 		// TRAINING
-		int times = 100;
+		int times = 10;
 		while(times > 0)
 		{
-			firstCSVNetwork.trainCSV("C:\\Users\\panch\\cursoJava\\workspace\\NN\\train_digits2.csv", 1, 100);
+			firstCSVNetwork.trainCSV("C:\\Users\\Asus\\OneDrive\\Documents\\Learning\\5-Universidad\\4 Semestre\\Orientada a Objetos\\Proyecto\\Data Sets\\Letters_train.csv", 1, 1000);
 			times--;
 		}
 		
 		// TESTING
 		System.out.println("\n\n///// TESTING /////\n\n");
-		firstCSVNetwork.testCSV("C:\\Users\\panch\\cursoJava\\workspace\\NN\\train_digits2.csv", 1, 100);
+		firstCSVNetwork.testCSV("C:\\\\Users\\\\Asus\\\\OneDrive\\\\Documents\\\\Learning\\\\5-Universidad\\\\4 Semestre\\\\Orientada a Objetos\\\\Proyecto\\\\Data Sets\\\\Letters_train.csv", 1001, 200);
 		
+		/*
 		//EVALUATE
 		System.out.println("EVALUATE firstCSVNetwork");
 		firstCSVNetwork.evaluateIMG("C:\\Users\\panch\\cursoJava\\workspace\\NN\\4.png");
+		*/
 		
 		
 		// SAVE
