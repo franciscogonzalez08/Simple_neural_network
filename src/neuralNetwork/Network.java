@@ -5,6 +5,8 @@ import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.awt.Color;
@@ -31,12 +33,16 @@ public class Network {
 	Map<String, Integer> labelsMap = null;
 	
 	//Builders
+	public Network(int inputSize, int outputSize) {
+		this(inputSize, outputSize, 0.1);
+	}
+	
 	public Network(int inputSize, int outputSize, double learning_rate) {
 		this(inputSize, (int)Math.ceil((inputSize + outputSize)/2.0), outputSize, learning_rate);
 	}
 	
 	public Network(int inputSize, int middleNeurons, int outputSize, double learning_rate) {
-		LEARNING_RATE = learning_rate;
+		LEARNING_RATE = learning_rate >= 0.001 && learning_rate <= 0.1? learning_rate : 0.1;
 		
 		double[][] weights1 = new double[middleNeurons][inputSize];
 		double[][] weights2 = new double[outputSize][middleNeurons];
@@ -63,10 +69,17 @@ public class Network {
             FileReader fr = new FileReader(path);
             BufferedReader br = new BufferedReader(fr);
 
+            long lineCount = Files.lines(Paths.get(path)).count();
+            if(to > lineCount) {
+            	System.out.println("The file does not have the requested number of rows. The network was not trained.");
+            	br.close();
+            	return;
+            }
+            
             String str;
             String arrLine[];
             int lineNumber = 1;
-            while((str = br.readLine()) != null && lineNumber <= to) // TODO: maybe check there's actually that many rows?
+            while((str = br.readLine()) != null && lineNumber <= to)
             {
             	if(lineNumber < from) {
             		lineNumber++;
@@ -75,8 +88,6 @@ public class Network {
             	
             	// We'll save the line in an array
             	arrLine = str.split(",");
-            	
-            	// TODO: Validate the size or arrLine is = inputs+1 (bc label)
             	
             	// We'll feed in the inputs
             	for(int i = 1; i < inputs.size()+1; i++) 
@@ -94,6 +105,7 @@ public class Network {
             	train();
             	lineNumber++;
             }
+            
             br.close();
         } catch(IOException e){
             System.out.println("Couldn't find or read the file.");
@@ -104,7 +116,6 @@ public class Network {
 		trainCSV(path, 1, quantity);
 	}
 	
-	// TODO: maybe do one with just path too
 	
 	// Test
 	public double[] testCSV(String path, int from, int to) {
@@ -119,13 +130,20 @@ public class Network {
             FileReader fr = new FileReader(path);
             BufferedReader br = new BufferedReader(fr);
 
+            long lineCount = Files.lines(Paths.get(path)).count();
+            if(to > lineCount) {
+            	System.out.println("The file does not have the requested number of rows. The network was not trained.");
+            	br.close();
+            	return new double[]{};
+            }
+            
             String str;
             String arrLine[];
             int lineNumber = 1;
             double[] arrOutputs;
             double desiredOutput;
             
-            while((str = br.readLine()) != null && lineNumber <= to) // TODO: maybe check there's actually that many rows?
+            while((str = br.readLine()) != null && lineNumber <= to)
             {	
             	if(lineNumber < from) {
             		lineNumber++;
@@ -134,8 +152,6 @@ public class Network {
             	
             	// We'll save the line in an array
             	arrLine = str.split(",");
-            	
-            	// TODO: Validate the size or arrLine is = inputs+1 (bc label)
             	
             	// We'll feed in the inputs
             	for(int i = 1; i < inputs.size()+1; i++) 
@@ -164,7 +180,6 @@ public class Network {
             	
             	// Alternative: just give points if the answer is right
             	// (right being the higher output matching the label)
-            	// TODO: consider adding a threshold
             	arrOutputs = outputs.toArray();
             	if(labelsMap == null) 
             		desiredOutput = arrOutputs[Integer.parseInt(arrLine[0])];
@@ -186,9 +201,8 @@ public class Network {
             System.out.println("Couldn't find or read the file.");
         }
 		
-		System.out.println(Arrays.toString(avg_error_vector.toArray())); // DBUG
 		System.out.println(	"Score: " + correctGuesses + "/" + quantity + 
-							" (" + correctGuesses*100/quantity + "%)"); // DBUG
+							" (" + correctGuesses*100/quantity + "%)");
 		
 		return avg_error_vector.toArray();
 	}
@@ -199,7 +213,12 @@ public class Network {
 		try {
 			BufferedImage image = ImageIO.read(imageFile);
 			int width = image.getWidth();
-			int height = image.getHeight(); //TODO: Validar las dimensiones de la imagen con el tamanio de inputs
+			int height = image.getHeight();
+			if(width*height != inputs.size()) 
+			{
+				System.out.println("Could not evaluate the given image. Image has a different number of pixels than the network's input layer.");
+				return;
+			}
 			Color pixel;
 			
 			for(int i = 0; i < height; i++)
@@ -216,7 +235,11 @@ public class Network {
 	}
 	
 	public void save(String path_name) {
-		if(path_name == null) return; // TODO: properly handle this
+		if(path_name == null) 
+		{
+			System.out.println("path_name is not specified. Save file not created.");
+			return;
+		}
 		
 		try {
 			FileWriter file_writer = new FileWriter(path_name);
@@ -305,13 +328,6 @@ public class Network {
 		sigmoid(hidden_layer);
 		outputs = (DenseDoubleMatrix1D)algebra.mult(weights2, hidden_layer);
 		sigmoid(outputs);
-		
-//		System.out.println(outputs.toString()); //dbug - see outputs
-//		System.out.println("Expected: \n" + expected_outputs.toString()); //dbug0
-//		if(expected_outputs.getQuick(1) == 1) {
-//			System.out.println(outputs.toString()); //dbug - see outputs
-//			System.out.println("Expected: \n" + expected_outputs.toString());
-//		}
 	}
 	
 	private void train() {
