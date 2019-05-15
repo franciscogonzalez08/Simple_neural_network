@@ -126,7 +126,7 @@ public class Network {
             double desiredOutput;
             
             while((str = br.readLine()) != null && lineNumber <= to) // TODO: maybe check there's actually that many rows?
-            {
+            {	
             	if(lineNumber < from) {
             		lineNumber++;
             		continue;
@@ -166,7 +166,10 @@ public class Network {
             	// (right being the higher output matching the label)
             	// TODO: consider adding a threshold
             	arrOutputs = outputs.toArray();
-            	desiredOutput = arrOutputs[labelsMap.get(arrLine[0])];
+            	if(labelsMap == null) 
+            		desiredOutput = arrOutputs[Integer.parseInt(arrLine[0])];
+            	else
+            		desiredOutput = arrOutputs[labelsMap.get(arrLine[0])];
             	Arrays.sort(arrOutputs);
             	if(arrOutputs[arrOutputs.length-1] == desiredOutput) // note: even if another class has the max value, we'll consider that to be a correct answer
             		correctGuesses++;
