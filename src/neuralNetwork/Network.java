@@ -15,7 +15,7 @@ import java.io.FileWriter;
 
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -28,7 +28,7 @@ public class Network {
 	private DenseDoubleMatrix1D hidden_layer;
 	private final double LEARNING_RATE; // valid range: [0.001, 0.1]
 	Algebra algebra = new Algebra();
-	HashMap<String, Integer> labelsMap = null;
+	Map<String, Integer> labelsMap = null;
 	
 	//Builders
 	public Network(int inputSize, int outputSize, double learning_rate) {
@@ -83,12 +83,12 @@ public class Network {
             		inputs.setQuick(i-1, Double.parseDouble(arrLine[i]));
             	
             	// We update the expected outputs for the current case
+            	expected_outputs.assign(0);
             	if(labelsMap == null) 
-            	{
             		// If no special mapping is configured, we'll assume it works with 0-9
-            		expected_outputs.assign(0);
             		expected_outputs.setQuick(Integer.parseInt(arrLine[0]), 1.0);
-            	} // TODO: Else
+            	else
+            		expected_outputs.setQuick(labelsMap.get(arrLine[0]), 1.0);
             	
             	// We're ready to train the network with the new data
             	train();
@@ -109,6 +109,7 @@ public class Network {
 	// Test
 	public double[] testCSV(String path, int from, int to) {
 		int quantity = to - from + 1;
+		int correctGuesses = 0;
 		
 		DenseDoubleMatrix1D avg_error_vector = new DenseDoubleMatrix1D(outputs.size());
         avg_error_vector.assign(0);
@@ -121,6 +122,8 @@ public class Network {
             String str;
             String arrLine[];
             int lineNumber = 1;
+            double[] arrOutputs;
+            double desiredOutput;
             
             while((str = br.readLine()) != null && lineNumber <= to) // TODO: maybe check there's actually that many rows?
             {
@@ -139,12 +142,12 @@ public class Network {
             		inputs.setQuick(i-1, Double.parseDouble(arrLine[i]));
             	
             	// We update the expected outputs for the current case
+            	expected_outputs.assign(0);
             	if(labelsMap == null) 
-            	{
             		// If no special mapping is configured, we'll assume it works with 0-9
-            		expected_outputs.assign(0);
             		expected_outputs.setQuick(Integer.parseInt(arrLine[0]), 1.0);
-            	} // TODO: Else
+            	else
+            		expected_outputs.setQuick(labelsMap.get(arrLine[0]), 1.0);
             	
             	// We'll calculate the outputs
             	feed_forward();
@@ -159,6 +162,15 @@ public class Network {
             	
             	avg_error_vector = sum(avg_error_vector, temp_vector);
             	
+            	// Alternative: just give points if the answer is right
+            	// (right being the higher output matching the label)
+            	// TODO: consider adding a threshold
+            	arrOutputs = outputs.toArray();
+            	desiredOutput = arrOutputs[labelsMap.get(arrLine[0])];
+            	Arrays.sort(arrOutputs);
+            	if(arrOutputs[arrOutputs.length-1] == desiredOutput) // note: even if another class has the max value, we'll consider that to be a correct answer
+            		correctGuesses++;
+            		
             	lineNumber++;
             }
             br.close();
@@ -171,7 +183,9 @@ public class Network {
             System.out.println("Couldn't find or read the file.");
         }
 		
-		System.out.println(Arrays.toString(avg_error_vector.toArray()));
+		System.out.println(Arrays.toString(avg_error_vector.toArray())); // DBUG
+		System.out.println(	"Score: " + correctGuesses + "/" + quantity + 
+							" (" + correctGuesses*100/quantity + "%)"); // DBUG
 		
 		return avg_error_vector.toArray();
 	}
@@ -278,6 +292,10 @@ public class Network {
 		return nn;
 	}
 	
+	public void configureMapping(Map<String, Integer> m) {
+		labelsMap = m;
+	}
+	
 	// Auxiliary Methods
 	private void feed_forward() {
 		hidden_layer = (DenseDoubleMatrix1D)algebra.mult(weights1, inputs);
@@ -285,7 +303,7 @@ public class Network {
 		outputs = (DenseDoubleMatrix1D)algebra.mult(weights2, hidden_layer);
 		sigmoid(outputs);
 		
-		System.out.println(outputs.toString()); //dbug - see outputs
+//		System.out.println(outputs.toString()); //dbug - see outputs
 //		System.out.println("Expected: \n" + expected_outputs.toString()); //dbug0
 //		if(expected_outputs.getQuick(1) == 1) {
 //			System.out.println(outputs.toString()); //dbug - see outputs
