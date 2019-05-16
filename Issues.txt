@@ -1,0 +1,2 @@
+> We don't actually need the user to give us a Map. An array with the labels should be enough (we'd then use indexOf to get index of the neuron from the output layer it corresponds to)
+> The avg_output_errors returned by test is highly missleading and not particularily useful, so we should probably get rid of that and perhaps return the % of accuracy

@@ -24,6 +24,11 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 
+/**
+ * This class creates a neural network with 3 layers: an input layer, hidden layer and output layer.
+ * @author franciscogonzalez08 and drophy at GitHub
+ *
+ */
 public class Network {
 	private DenseDoubleMatrix1D inputs;
 	private DenseDoubleMatrix1D expected_outputs;
@@ -35,15 +40,41 @@ public class Network {
 	private Algebra algebra = new Algebra();
 	private Map<String, Integer> labelsMap = null;
 	
-	//Builders
+	// CONSTRUCTORS
+	/**
+	 * Constructs a network with the specified number of neurons for the input and output layers.
+	 * The number of neurons the hidden layer has is obtained as ceil((inputSize + outputSize)/2.0),
+	 * which is the recommended size for this layer.
+	 * Its learning rate will be set to 0.1 which is its highest possible value.
+	 * This allows the network to learn faster (require less training to get good results), 
+	 * but may perform poorly compared to a network with a lower learning rate.
+	 * @param inputSize - size of the input layer
+	 * @param outputSize - size of the output layer
+	 */
 	public Network(int inputSize, int outputSize) {
 		this(inputSize, outputSize, 0.1);
 	}
 	
+	/**
+	 * Constructs a network with the specified learning rate and 
+	 * number of neurons for the input and output layers.
+	 * The number of neurons the hidden layer has is obtained as ceil((inputSize + outputSize)/2.0),
+	 * which is the recommended size for this layer.
+	 * @param inputSize - size of the input layer
+	 * @param outputSize - size of the output layer
+	 * @param learning_rate - number in range [0.001, 0.1] that specifies how strongly this network is affected by a training case
+	 */
 	public Network(int inputSize, int outputSize, double learning_rate) {
 		this(inputSize, (int)Math.ceil((inputSize + outputSize)/2.0), outputSize, learning_rate);
 	}
 	
+	/**
+	 * Constructs a network with the specified learning rate and number of neurons for each layer.
+	 * @param inputSize - size of the input layer
+	 * @param middleNeurons - size of the hidden layer
+	 * @param outputSize - size of the output layer
+	 * @param learning_rate - number in range [0.001, 0.1] that specifies how strongly this network is affected by a training case
+	 */
 	public Network(int inputSize, int middleNeurons, int outputSize, double learning_rate) {
 		LEARNING_RATE = learning_rate >= 0.001 && learning_rate <= 0.1? learning_rate : 0.1;
 		
@@ -66,7 +97,30 @@ public class Network {
 		outputs = new DenseDoubleMatrix1D(outputSize);
 	}
 	
-	//Train
+	// SETTER
+	/**
+	 * By default, the network is configured so that the outputs correspond to a 0 based 
+	 * base 10 number. In any other scenario, the user must provide a map with the class (as a
+	 * String) as its key and 0 based indexes as its values.
+	 * @param m
+	 */
+	public void configureMapping(Map<String, Integer> m) {
+		labelsMap = m;
+	}
+	
+	// TRAIN
+	/**
+	 * Trains this network using the file specified in "path".
+	 * Only the rows in the range specified by "from" and "to" will be used. 
+	 * The file must be a CSV file with a row per training case.
+	 * The first column of each row must contain the class the image belongs to.
+	 * The following columns must contain a value in range [0, 255] corresponding
+	 * to the greyscale value of a pixel.
+	 * Pixels are expected to be ordered as consecutive rows of the original image.  
+	 * @param path - path to the CSV file
+	 * @param from - first row that will be used 
+	 * @param to - last row that will be used
+	 */
 	public void trainCSV(String path, int from, int to) {
 		try {
             FileReader fr = new FileReader(path);
@@ -115,10 +169,30 @@ public class Network {
         }
 	}
 	
+	/**
+	 * Trains this network using the file specified in "path"
+	 * and the first "quantity" rows. 
+	 * The file must be a CSV file with a row per training case.
+	 * The first column of each row must contain the class the image belongs to.
+	 * The following columns must contain a value in range [0, 255] corresponding
+	 * to the greyscale value of a pixel.
+	 * Pixels are expected to be ordered as consecutive rows of the original image.  
+	 * @param path - path to the CSV file
+	 * @param quantity - number of rows that will be used from the CSV file
+	 */
 	public void trainCSV(String path, int quantity) {
 		trainCSV(path, 1, quantity);
 	}
 	
+	/**
+	 * Trains this network using the file specified in "path". 
+	 * The file must be a CSV file with a row per training case.
+	 * The first column of each row must contain the class the image belongs to.
+	 * The following columns must contain a value in range [0, 255] corresponding
+	 * to the greyscale value of a pixel.
+	 * Pixels are expected to be ordered as consecutive rows of the original image. 
+	 * @param path - path to the CSV file
+	 */
 	public void trainCSV(String path) {
 		try {
             FileReader fr = new FileReader(path);
@@ -133,7 +207,23 @@ public class Network {
         }
 	}
 	
-	// Test
+	// TEST
+	/**
+	 * Tests the accuracy of the network using the file specified in "path".
+	 * Only the rows in the range specified by "from" and "to" will be used. 
+	 * The method will print in the console the number of cases this network solved correctly.
+	 * The file must be a CSV file with a row per training case.
+	 * The first column of each row must contain the class the image belongs to.
+	 * The following columns must contain a value in range [0, 255] corresponding
+	 * to the greyscale value of a pixel.
+	 * Pixels are expected to be ordered as consecutive rows of the original image.
+	 * @param path - path to the CSV file
+	 * @param from - first row that will be used
+	 * @param to - last row that will be used
+	 * @return An array with the inverse of the average error of each output. 
+	 * Note that while higher values do correlate to a better performance, high values are usually
+	 * obtained regardless of the network's accuracy. 
+	 */
 	public double[] testCSV(String path, int from, int to) {
 		int quantity = to - from + 1;
 		int correctGuesses = 0;
@@ -223,10 +313,38 @@ public class Network {
 		return avg_error_vector.toArray();
 	}
 	
+	/**
+	 * Tests the accuracy of the network using the file specified in "path"
+	 * and the first "quantity" rows. 
+	 * The method will print in the console the number of cases this network solved correctly.
+	 * The file must be a CSV file with a row per training case.
+	 * The first column of each row must contain the class the image belongs to.
+	 * The following columns must contain a value in range [0, 255] corresponding
+	 * to the greyscale value of a pixel.
+	 * Pixels are expected to be ordered as consecutive rows of the original image.
+	 * @param path - path to the CSV file
+	 * @param quantity - number of rows that will be used from the CSV file
+	 * @return An array with the inverse of the average error of each output. 
+	 * Note that while higher values do correlate to a better performance, high values are usually
+	 * obtained regardless of the network's accuracy.  
+	 */
 	public double[] testCSV(String path, int quantity) {
 		return testCSV(path, 1, quantity);
 	}
 	
+	/**
+	 * Tests the accuracy of the network using the file specified in "path". 
+	 * The method will print in the console the number of cases this network solved correctly.
+	 * The file must be a CSV file with a row per training case.
+	 * The first column of each row must contain the class the image belongs to.
+	 * The following columns must contain a value in range [0, 255] corresponding
+	 * to the greyscale value of a pixel.
+	 * Pixels are expected to be ordered as consecutive rows of the original image.
+	 * @param path - path to the CSV file
+	 * @return An array with the inverse of the average error of each output. 
+	 * Note that while higher values do correlate to a better performance, high values are usually
+	 * obtained regardless of the network's accuracy.  
+	 */
 	public double[] testCSV(String path) {
 		try {
             FileReader fr = new FileReader(path);
@@ -243,6 +361,15 @@ public class Network {
 
 	}
 	
+	/**
+	 * Receives an image and prints to the console the network's guess.
+	 * A line is printed per possible class. 
+	 * Each line contains the class's index followed by a number in range [0, 1].
+	 * The higher the number, the more certain the network is that the image given
+	 * belongs to that class.
+	 * The image must have exactly as many pixels as the input layer.  
+	 * @param path - path to the image
+	 */
 	// Evaluate
 	public void evaluateIMG(String path) {
 		File imageFile = new File(path);
@@ -264,12 +391,25 @@ public class Network {
 														   pixel.getGreen() + 
 														   pixel.getBlue())/3));
 				}
+			
 			feed_forward();
+			int i = 0;
+			for(double guess : outputs.toArray()) {
+				System.out.println(i + ") " + guess);
+			}
+			
 		} catch(IOException e) {
 			System.out.println("Couldn't read the given image.");
 		}
 	}
 	
+	/**
+	 * Creates a .txt file containing the current configuration of the network.
+	 * The file can be used by the load static method to create an identical network. 
+	 * This is specially useful so that the network's training is not lost after
+	 * the application's execution ends.
+	 * @param path_name - path and name for the new file 
+	 */
 	public void save(String path_name) {
 		if(path_name == null) 
 		{
@@ -328,6 +468,12 @@ public class Network {
 		}
 	}
 	
+	/**
+	 * Creates and returns a neural network with the configuration given by the specified .txt file.
+	 * Such a file can be created using the save method on an already existing neural network.
+	 * @param path - path to the .txt file
+	 * @return a new neural network object with the configuration given by the specified .txt file.
+	 */
 	public static Network load(String path) {
 		Network nn = null;
 		try {
@@ -383,10 +529,7 @@ public class Network {
 		return nn;
 	}
 	
-	public void configureMapping(Map<String, Integer> m) {
-		labelsMap = m;
-	}
-	
+	// PRIVATE METHODS
 	// Auxiliary Methods
 	private void feed_forward() {
 		hidden_layer = (DenseDoubleMatrix1D)algebra.mult(weights1, inputs);

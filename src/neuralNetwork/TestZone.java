@@ -21,6 +21,7 @@ public class TestZone {
 		
 		n.configureMapping(offset1Map);
 		
+		n.trainCSV("C:\\Users\\Asus\\OneDrive\\Documents\\Learning\\5-Universidad\\4 Semestre\\Orientada a Objetos\\Proyecto\\Data Sets\\Train_letters.csv", 5);
 		
 		/*
 		// TRAINING
