@@ -48,8 +48,8 @@ public class Network {
 	 * Its learning rate will be set to 0.1 which is its highest possible value.
 	 * This allows the network to learn faster (require less training to get good results), 
 	 * but may perform poorly compared to a network with a lower learning rate.
-	 * @param inputSize - size of the input layer
-	 * @param outputSize - size of the output layer
+	 * @param inputSize size of the input layer
+	 * @param outputSize size of the output layer
 	 */
 	public Network(int inputSize, int outputSize) {
 		this(inputSize, outputSize, 0.1);
@@ -60,9 +60,9 @@ public class Network {
 	 * number of neurons for the input and output layers.
 	 * The number of neurons the hidden layer has is obtained as ceil((inputSize + outputSize)/2.0),
 	 * which is the recommended size for this layer.
-	 * @param inputSize - size of the input layer
-	 * @param outputSize - size of the output layer
-	 * @param learning_rate - number in range [0.001, 0.1] that specifies how strongly this network is affected by a training case
+	 * @param inputSize size of the input layer
+	 * @param outputSize size of the output layer
+	 * @param learning_rate number in range [0.001, 0.1] that specifies how strongly this network is affected by a training case
 	 */
 	public Network(int inputSize, int outputSize, double learning_rate) {
 		this(inputSize, (int)Math.ceil((inputSize + outputSize)/2.0), outputSize, learning_rate);
@@ -70,10 +70,10 @@ public class Network {
 	
 	/**
 	 * Constructs a network with the specified learning rate and number of neurons for each layer.
-	 * @param inputSize - size of the input layer
-	 * @param middleNeurons - size of the hidden layer
-	 * @param outputSize - size of the output layer
-	 * @param learning_rate - number in range [0.001, 0.1] that specifies how strongly this network is affected by a training case
+	 * @param inputSize size of the input layer
+	 * @param middleNeurons size of the hidden layer
+	 * @param outputSize size of the output layer
+	 * @param learning_rate number in range [0.001, 0.1] that specifies how strongly this network is affected by a training case
 	 */
 	public Network(int inputSize, int middleNeurons, int outputSize, double learning_rate) {
 		LEARNING_RATE = learning_rate >= 0.001 && learning_rate <= 0.1? learning_rate : 0.1;
@@ -102,7 +102,7 @@ public class Network {
 	 * By default, the network is configured so that the outputs correspond to a 0 based 
 	 * base 10 number. In any other scenario, the user must provide a map with the class (as a
 	 * String) as its key and 0 based indexes as its values.
-	 * @param m
+	 * @param m map of classes (key) to indexes (value)
 	 */
 	public void configureMapping(Map<String, Integer> m) {
 		labelsMap = m;
@@ -117,9 +117,9 @@ public class Network {
 	 * The following columns must contain a value in range [0, 255] corresponding
 	 * to the greyscale value of a pixel.
 	 * Pixels are expected to be ordered as consecutive rows of the original image.  
-	 * @param path - path to the CSV file
-	 * @param from - first row that will be used 
-	 * @param to - last row that will be used
+	 * @param path path to the CSV file
+	 * @param from first row that will be used 
+	 * @param to last row that will be used
 	 */
 	public void trainCSV(String path, int from, int to) {
 		try {
@@ -177,8 +177,8 @@ public class Network {
 	 * The following columns must contain a value in range [0, 255] corresponding
 	 * to the greyscale value of a pixel.
 	 * Pixels are expected to be ordered as consecutive rows of the original image.  
-	 * @param path - path to the CSV file
-	 * @param quantity - number of rows that will be used from the CSV file
+	 * @param path path to the CSV file
+	 * @param quantity number of rows that will be used from the CSV file
 	 */
 	public void trainCSV(String path, int quantity) {
 		trainCSV(path, 1, quantity);
@@ -191,7 +191,7 @@ public class Network {
 	 * The following columns must contain a value in range [0, 255] corresponding
 	 * to the greyscale value of a pixel.
 	 * Pixels are expected to be ordered as consecutive rows of the original image. 
-	 * @param path - path to the CSV file
+	 * @param path path to the CSV file
 	 */
 	public void trainCSV(String path) {
 		try {
@@ -217,9 +217,9 @@ public class Network {
 	 * The following columns must contain a value in range [0, 255] corresponding
 	 * to the greyscale value of a pixel.
 	 * Pixels are expected to be ordered as consecutive rows of the original image.
-	 * @param path - path to the CSV file
-	 * @param from - first row that will be used
-	 * @param to - last row that will be used
+	 * @param path path to the CSV file
+	 * @param from first row that will be used
+	 * @param to last row that will be used
 	 * @return An array with the inverse of the average error of each output. 
 	 * Note that while higher values do correlate to a better performance, high values are usually
 	 * obtained regardless of the network's accuracy. 
@@ -322,8 +322,8 @@ public class Network {
 	 * The following columns must contain a value in range [0, 255] corresponding
 	 * to the greyscale value of a pixel.
 	 * Pixels are expected to be ordered as consecutive rows of the original image.
-	 * @param path - path to the CSV file
-	 * @param quantity - number of rows that will be used from the CSV file
+	 * @param path path to the CSV file
+	 * @param quantity number of rows that will be used from the CSV file
 	 * @return An array with the inverse of the average error of each output. 
 	 * Note that while higher values do correlate to a better performance, high values are usually
 	 * obtained regardless of the network's accuracy.  
@@ -340,7 +340,7 @@ public class Network {
 	 * The following columns must contain a value in range [0, 255] corresponding
 	 * to the greyscale value of a pixel.
 	 * Pixels are expected to be ordered as consecutive rows of the original image.
-	 * @param path - path to the CSV file
+	 * @param path path to the CSV file
 	 * @return An array with the inverse of the average error of each output. 
 	 * Note that while higher values do correlate to a better performance, high values are usually
 	 * obtained regardless of the network's accuracy.  
@@ -368,7 +368,7 @@ public class Network {
 	 * The higher the number, the more certain the network is that the image given
 	 * belongs to that class.
 	 * The image must have exactly as many pixels as the input layer.  
-	 * @param path - path to the image
+	 * @param path path to the image
 	 */
 	// Evaluate
 	public void evaluateIMG(String path) {
@@ -408,7 +408,7 @@ public class Network {
 	 * The file can be used by the load static method to create an identical network. 
 	 * This is specially useful so that the network's training is not lost after
 	 * the application's execution ends.
-	 * @param path_name - path and name for the new file 
+	 * @param path_name path and name for the new file 
 	 */
 	public void save(String path_name) {
 		if(path_name == null) 
@@ -471,7 +471,7 @@ public class Network {
 	/**
 	 * Creates and returns a neural network with the configuration given by the specified .txt file.
 	 * Such a file can be created using the save method on an already existing neural network.
-	 * @param path - path to the .txt file
+	 * @param path path to the .txt file
 	 * @return a new neural network object with the configuration given by the specified .txt file.
 	 */
 	public static Network load(String path) {

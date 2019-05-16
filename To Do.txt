@@ -1,0 +1,24 @@
+[PDF]
+> Portada
+> Introducción (motivación etc)
+> UML
+> Pseudocódigo/Diagramas de Flujo
+> Un ejemplo de uso de POO en la librería
+> Pantallas de ejecución de una app. con explicación
+
+[Código fuente de la librería]
+[Código de la app.]
+
+[Presentación]
+> Problema (intro)
+> UML
+> Algoritmo (diagrama de flujo)
+> Ejemplo de ejecución (screen shots)
+> Principal dificultad
+	- Algoritmo (feed & back)
+	- Find the right settings (define what "correct" means, play with settings (LR), iterations, batches, random initial weights)
+	- Find data sets
+
+[Others]
+> API - comentar código
+> Instrucciones librería
