@@ -1,67 +1,59 @@
 package neuralNetwork;
 
 import java.util.HashMap;
-import java.util.Set;
-import java.util.Iterator;
 
 public class TestZone {
 
-	public static void main(String[] args) {
-		/*
-		Network n_high_lr = Network.load("C:\\Users\\Asus\\eclipse-workspace\\X0 NN\\Numbers_High_LR_100.txt");
-		Network n_low_lr = Network.load("C:\\Users\\Asus\\eclipse-workspace\\X0 NN\\Numbers_Low_LR_100.txt");
-		*/
+	public static void main(String[] args) {	
+		//We'll create a new neural network
+		Network loserNetwork = new Network(784, 26, 0.001);
 		
-		Network n = new Network(784, 26);
-		
-		// MAPPING
+		// We'll configure the mapping
 		HashMap<String, Integer> offset1Map = new HashMap<>();
 		for(int i = 0; i < 26; i++) 
 			offset1Map.put(""+(i+1), i);
+
+		loserNetwork.configureMapping(offset1Map);
 		
-		n.configureMapping(offset1Map);
-		
-		n.trainCSV("C:\\Users\\Asus\\OneDrive\\Documents\\Learning\\5-Universidad\\4 Semestre\\Orientada a Objetos\\Proyecto\\Data Sets\\Train_letters.csv", 5);
-		
-		/*
-		// TRAINING
+		// We'll have it do a couple push-ups
 		int times = 0;
-		while(times < 1_000)
-		{
-			n_high_lr.trainCSV("C:\\Users\\Asus\\OneDrive\\Documents\\Learning\\5-Universidad\\4 Semestre\\Orientada a Objetos\\Proyecto\\Data Sets\\train_digits_full.csv", 1, 33_600);
-			n_low_lr.trainCSV("C:\\Users\\Asus\\OneDrive\\Documents\\Learning\\5-Universidad\\4 Semestre\\Orientada a Objetos\\Proyecto\\Data Sets\\train_digits_full.csv", 1, 33_600);
-			times++;
-			
-			System.out.println("Times = " + times);
-			if(times%100 == 0)
-			{
-				n_high_lr.save("Numbers_High_LR_" + times + ".txt");
-				n_low_lr.save("Numbers_Low_LR_" + times + ".txt");
-			}
-		}
-		*/
+        do
+        {
+            times++;
+            loserNetwork.trainCSV("C:\\Users\\panch\\Downloads\\Letters_train.csv", 1, 71_040); //80% is used for training and 20% for testing
+        } while(times <= 2);
 		
-		/*
-		// TESTING
-		System.out.println("///// TESTING /////\n\n");
-		n_high_lr.testCSV("C:\\Users\\Asus\\OneDrive\\Documents\\Learning\\5-Universidad\\4 Semestre\\Orientada a Objetos\\Proyecto\\Data Sets\\train_digits_full.csv", 33_601, 42_000);
-		n_low_lr.testCSV("C:\\Users\\Asus\\OneDrive\\Documents\\Learning\\5-Universidad\\4 Semestre\\Orientada a Objetos\\Proyecto\\Data Sets\\train_digits_full.csv", 33_601, 42_000);
-		*/
+		// And we'll save it just in case it turns out to be really good (plot twist: it won't but shhh)
+		loserNetwork.save("C:\\Users\\panch\\cursoJava\\workspace\\X0 NN\\savedNetworks\\loserNetwork.txt");
 		
-		/*
+		//We'll import more experienced networks to compete
+		Network sassyNetwork200 = Network.load("C:\\Users\\panch\\cursoJava\\workspace\\X0 NN\\savedNetworks\\Letters_200.txt");
+		Network moodyNetwork400 = Network.load("C:\\Users\\panch\\cursoJava\\workspace\\X0 NN\\savedNetworks\\Letters_400.txt");
+		Network wiseNetwork600 = Network.load("C:\\Users\\panch\\cursoJava\\workspace\\X0 NN\\savedNetworks\\Letters_600.txt");
+		Network kawaiiNetwork800 = Network.load("C:\\Users\\panch\\cursoJava\\workspace\\X0 NN\\savedNetworks\\Letters_800.txt");
+		Network winnerNetwork1000 = Network.load("C:\\Users\\panch\\cursoJava\\workspace\\X0 NN\\savedNetworks\\Letters_1000.txt");
+		
+		// Let the competition begin! May the best network win c:
+		System.out.println("Loser network");
+		loserNetwork.testCSV("C:\\Users\\panch\\Downloads\\Letters_train.csv", 71_041, 88_000);
+		
+		System.out.println("Sassy network");
+		sassyNetwork200.testCSV("C:\\Users\\panch\\Downloads\\Letters_train.csv", 71_041, 88_000);
+		
+		System.out.println("Moody network");
+		moodyNetwork400.testCSV("C:\\Users\\panch\\Downloads\\Letters_train.csv", 71_041, 88_000);
+		
+		System.out.println("Wise network");
+		wiseNetwork600.testCSV("C:\\Users\\panch\\Downloads\\Letters_train.csv", 71_041, 88_000);
+		
+		System.out.println("Kawaii network");
+		kawaiiNetwork800.testCSV("C:\\Users\\panch\\Downloads\\Letters_train.csv", 71_041, 88_000);
+		
+		System.out.println("Winner network");
+		winnerNetwork1000.testCSV("C:\\Users\\panch\\Downloads\\Letters_train.csv", 71_041, 88_000);
+		
 		//EVALUATE
-		System.out.println("EVALUATE firstCSVNetwork");
-		firstCSVNetwork.evaluateIMG("C:\\Users\\panch\\cursoJava\\workspace\\NN\\4.png");
-		 */
+		kawaiiNetwork800.evaluateIMG("C:\\Users\\panch\\Desktop\\TESTCASES\\T.png");
 	
-		// SAVE
-		n.save("hashSavedTest.txt");
-		Network newNetwork = Network.load("hashSavedTest.txt");
-		
-		/*
-		//EVALUATE
-		System.out.println("EVALUATE newNetwork");
-		newNetwork.evaluateIMG("C:\\Users\\panch\\cursoJava\\workspace\\NN\\4.png");
-		*/
 	}
 }

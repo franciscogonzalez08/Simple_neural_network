@@ -396,6 +396,7 @@ public class Network {
 			int i = 0;
 			for(double guess : outputs.toArray()) {
 				System.out.println(i + ") " + guess);
+				i++;
 			}
 			
 		} catch(IOException e) {
