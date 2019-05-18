@@ -32,7 +32,7 @@ public class TestZone {
 //		Network sassyNetwork200 = Network.load("C:\\Users\\panch\\cursoJava\\workspace\\X0 NN\\savedNetworks\\Letters_200.txt");
 //		Network moodyNetwork400 = Network.load("C:\\Users\\panch\\cursoJava\\workspace\\X0 NN\\savedNetworks\\Letters_400.txt");
 //		Network wiseNetwork600 = Network.load("C:\\Users\\panch\\cursoJava\\workspace\\X0 NN\\savedNetworks\\Letters_600.txt");
-		Network kawaiiNetwork800 = Network.load("C:\\Users\\panch\\cursoJava\\workspace\\X0 NN\\savedNetworks\\Letters_800.txt");
+//		Network kawaiiNetwork800 = Network.load("C:\\Users\\panch\\cursoJava\\workspace\\X0 NN\\savedNetworks\\Letters_800.txt");
 //		Network winnerNetwork1000 = Network.load("C:\\Users\\panch\\cursoJava\\workspace\\X0 NN\\savedNetworks\\Letters_1000.txt");
 //		
 //		// Let the competition begin! May the best network win c:
@@ -54,8 +54,11 @@ public class TestZone {
 //		System.out.println("Winner network");
 //		winnerNetwork1000.testCSV("C:\\Users\\panch\\Downloads\\Letters_train.csv", 71_041, 88_000);
 		
+		//columnsFirst
+//		kawaiiNetwork800.setColumnsFirst(true);
+		
 		//EVALUATE
-		kawaiiNetwork800.evaluateIMG("C:\\Users\\panch\\Desktop\\TESTCASES\\test.png");
+//		kawaiiNetwork800.evaluateIMG("C:\\Users\\panch\\Desktop\\TESTCASES\\test.png");
 	
 	}
 }

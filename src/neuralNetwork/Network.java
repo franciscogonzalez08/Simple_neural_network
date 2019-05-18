@@ -39,6 +39,7 @@ public class Network {
 	private final double LEARNING_RATE; // valid range: [0.001, 0.1]
 	private Algebra algebra = new Algebra();
 	private Map<String, Integer> labelsMap = null;
+	private boolean columnsFirst = false;
 	
 	// CONSTRUCTORS
 	/**
@@ -108,6 +109,10 @@ public class Network {
 		labelsMap = m;
 	}
 	
+	public void setColumnsFirst(boolean columnsFirst) {
+		this.columnsFirst = columnsFirst;
+	}
+	
 	// TRAIN
 	/**
 	 * Trains this network using the file specified in "path".
@@ -116,7 +121,8 @@ public class Network {
 	 * The first column of each row must contain the class the image belongs to.
 	 * The following columns must contain a value in range [0, 255] corresponding
 	 * to the greyscale value of a pixel.
-	 * Pixels are expected to be ordered as consecutive rows of the original image.  
+	 * Pixels are expected to be ordered as consecutive rows of the original image 
+	 * unless specified otherwise using the setColumnsFirst method.
 	 * @param path path to the CSV file
 	 * @param from first row that will be used 
 	 * @param to last row that will be used
@@ -383,13 +389,27 @@ public class Network {
 				return;
 			}
 			Color pixel;
-			
-			for(int i = 0; i < height; i++)
+			if(!columnsFirst)
+				for(int i = 0; i < height; i++) {
+					for(int j = 0; j < width; j++) {
+						pixel = new Color(image.getRGB(j, i));
+						inputs.setQuick(i * width + j, ((pixel.getRed() +
+															   pixel.getGreen() + 
+															   pixel.getBlue())/3));
+						System.out.printf("%3.0f ", inputs.getQuick((i * width + j)));
+					}
+					System.out.println();
+				}
+			else 
 				for(int j = 0; j < width; j++) {
-					pixel = new Color(image.getRGB(j, i));
-					inputs.setQuick(i * width + j, 255 - ((pixel.getRed() +
-														   pixel.getGreen() + 
-														   pixel.getBlue())/3));
+					for(int i = 0; i < height; i++) {
+						pixel = new Color(image.getRGB(j, i));
+						inputs.setQuick(j * height + i, ((pixel.getRed() +
+															   pixel.getGreen() + 
+															   pixel.getBlue())/3));
+						System.out.printf("%3.0f ", inputs.getQuick((j * height + i)));
+					}
+					System.out.println();
 				}
 			
 			feed_forward();
