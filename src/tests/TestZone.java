@@ -55,7 +55,7 @@ public class TestZone {
 //		winnerNetwork1000.testCSV("C:\\Users\\panch\\Downloads\\Letters_train.csv", 71_041, 88_000);
 		
 		//EVALUATE
-		kawaiiNetwork800.evaluateIMG("C:\\Users\\panch\\Desktop\\TESTCASES\\T.png");
+		kawaiiNetwork800.evaluateIMG("C:\\Users\\panch\\Desktop\\TESTCASES\\test.png");
 	
 	}
 }
