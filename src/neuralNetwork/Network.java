@@ -415,9 +415,7 @@ public class Network {
 			feed_forward();
 			int i = 0;
 			for(double guess : outputs.toArray()) {
-				/*System.out.println(i + ") " + guess);*/
-				System.out.printf("%c) %f", i + 65, guess * 100);
-				System.out.println("%");
+				System.out.printf("%d) %f%\n", i, guess * 100);
 				i++;
 			}
 			
